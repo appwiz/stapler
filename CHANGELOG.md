@@ -1,0 +1,2 @@
+- fix: pressing Space now closes the Quick Look preview as well as opening it
+- fix: arrow keys move up and down the list while Quick Look is open, with the preview following the selection
