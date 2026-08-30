@@ -648,9 +648,21 @@ struct ContentView: View {
 			eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
 				if event.keyCode == 36 { // Return key
 					launchSelected()
-				} else if event.keyCode == 49 { // Space key
-					showQuickLook()
+				} else if event.keyCode == 49 { // Space key: toggle Quick Look
+					if let panel = visibleQuickLookPanel() {
+						panel.orderOut(nil)
+					} else {
+						showQuickLook()
+					}
 					return nil
+				} else if event.keyCode == 125 || event.keyCode == 126 { // Down/Up arrows
+					// While Quick Look is open the panel is the key window, so the
+					// list never sees arrow keys; move the selection ourselves and
+					// keep the preview in step, like Finder.
+					if visibleQuickLookPanel() != nil {
+						moveSelection(by: event.keyCode == 125 ? 1 : -1)
+						return nil
+					}
 				}
 				return event
 			}
@@ -709,6 +721,31 @@ struct ContentView: View {
 		}
 	}
 
+	// The shared Quick Look panel, but only if it is currently on screen.
+	// Avoids instantiating the panel just to check for it.
+	private func visibleQuickLookPanel() -> QLPreviewPanel? {
+		guard QLPreviewPanel.sharedPreviewPanelExists(),
+			  let panel = QLPreviewPanel.shared(), panel.isVisible else {
+			return nil
+		}
+		return panel
+	}
+
+	// Moves the single selection up or down the list and, if Quick Look is
+	// open, updates the panel to preview the newly selected row.
+	private func moveSelection(by delta: Int) {
+		let aliases = viewModel.document.aliases
+		guard !aliases.isEmpty else { return }
+		let currentIndex = aliases.firstIndex { selection.contains($0.id) } ?? 0
+		let newIndex = max(0, min(aliases.count - 1, currentIndex + delta))
+		let alias = aliases[newIndex]
+		selection = [alias.id]
+		if !alias.isWebURL, let panel = visibleQuickLookPanel() {
+			quickLookResponder.previewItems = [alias]
+			panel.reloadData()
+		}
+	}
+
 	private func showQuickLook() {
 		// Quick Look only applies to files; skip web aliases.
 		let selectedAliases = viewModel.document.aliases.filter { selection.contains($0.id) && !$0.isWebURL }
@@ -720,6 +757,7 @@ struct ContentView: View {
 			panel.delegate = quickLookResponder
 			panel.currentPreviewItemIndex = 0
 			panel.makeKeyAndOrderFront(nil)
+			panel.reloadData()
 		}
 	}
 
