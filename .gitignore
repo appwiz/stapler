@@ -1,3 +1,5 @@
 
+build/
+build-sandbox/
 Stapler.xcodeproj/project.xcworkspace/xcuserdata/matt.xcuserdatad/UserInterfaceState.xcuserstate
 Stapler.xcodeproj/xcuserdata/matt.xcuserdatad/xcschemes/xcschememanagement.plist

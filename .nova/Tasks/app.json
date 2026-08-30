@@ -1,0 +1,16 @@
+{
+  "actions" : {
+    "build" : {
+      "enabled" : true,
+      "script" : "pkill -x 'Stapler' 2>/dev/null || true; xcodebuild -project Stapler.xcodeproj -scheme Stapler -configuration Debug -destination 'platform=macOS' -derivedDataPath build-sandbox build && open \"build-sandbox/Build/Products/Debug/Stapler.app\""
+    },
+    "clean" : {
+      "enabled" : true,
+      "script" : "trash ./build/ ./build-sandbox/ 2>/dev/null || true"
+    },
+    "run" : {
+      "enabled" : true,
+      "script" : "pkill -x 'Stapler' 2>/dev/null || true; xcodebuild -project Stapler.xcodeproj -scheme Stapler -configuration Debug -destination 'platform=macOS' -derivedDataPath build ENABLE_APP_SANDBOX=NO CODE_SIGN_ENTITLEMENTS='' build && open \"build/Build/Products/Debug/Stapler.app\""
+    }
+  }
+}
